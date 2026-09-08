@@ -22,8 +22,8 @@ app.add_middleware(
 )
 
 
-@app.get("/api/healthz", tags=["health"])
+@app.get("/api/health", tags=["health"])
 def health_check() -> dict[str, str]:
     """Return a small response so the frontend can confirm the API is running."""
 
-    return {"status": "ok"}
+    return {"status": "ok", "service": "safe-walk-ai-backend"}

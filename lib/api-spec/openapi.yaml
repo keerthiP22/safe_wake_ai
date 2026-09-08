@@ -11,7 +11,7 @@ tags:
   - name: health
     description: Health operations
 paths:
-  /healthz:
+  /health:
     get:
       operationId: healthCheck
       tags: [health]
@@ -32,6 +32,9 @@ components:
       properties:
         status:
           type: string
+        service:
+          type: string
       required:
         - status
+        - service
 

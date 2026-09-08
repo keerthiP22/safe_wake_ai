@@ -103,7 +103,7 @@ function ConnectionStatus() {
 
         <div className="mt-5 flex items-center justify-between gap-4 border-t border-border pt-4">
           <p className="text-xs leading-relaxed text-muted-foreground">Live routing is intentionally not enabled.</p>
-          <span className="mono-face shrink-0 text-[10px] text-muted-foreground">GET /api/healthz</span>
+           <span className="mono-face shrink-0 text-[10px] text-muted-foreground">GET /api/health</span>
         </div>
       </div>
     </section>

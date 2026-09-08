@@ -51,7 +51,7 @@ export const getHealthCheckUrl = () => {
 
 
 
-  return `/api/healthz`
+  return `/api/health`
 }
 
 /**
@@ -75,7 +75,7 @@ export const healthCheck = async ( options?: Parameters<typeof customFetch>[1]):
 
 export const getHealthCheckQueryKey = () => {
     return [
-    `/api/healthz`
+    `/api/health`
     ] as const;
     }
 

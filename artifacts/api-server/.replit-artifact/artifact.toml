@@ -21,4 +21,4 @@ args = ["uv", "sync", "--locked"]
 args = ["sh", "-c", "cd ../.. && uv run uvicorn backend.main:app --host 0.0.0.0 --port 8080"]
 
 [services.production.health.startup]
-path = "/api/healthz"
+path = "/api/health"
