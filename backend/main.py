@@ -21,6 +21,10 @@ from backend.osm_service import (
     extract_route_features,
     query_route_features,
 )
+from backend.destination_resolver import (
+    DestinationResolverError,
+    find_destination_candidates,
+)
 
 
 app = FastAPI(
@@ -124,19 +128,104 @@ async def get_routes(
     # GET ORS ROUTES
     # ---------------------------------------------------------
 
+        # ---------------------------------------------------------
+    # GET ORS ROUTES
+    # ---------------------------------------------------------
+
+    destination_latitude = request.destination.latitude
+    destination_longitude = request.destination.longitude
+
+    destination_adjusted = False
+    resolved_destination = None
+
     try:
+        # First try the exact destination selected by the user.
         ors_data = await get_walking_routes(
             start_latitude=request.start.latitude,
             start_longitude=request.start.longitude,
-            destination_latitude=request.destination.latitude,
-            destination_longitude=request.destination.longitude,
+            destination_latitude=destination_latitude,
+            destination_longitude=destination_longitude,
         )
 
-    except ORSError as exc:
-        raise HTTPException(
-            status_code=502,
-            detail=str(exc),
-        ) from exc
+    except ORSError as original_ors_error:
+
+        # ---------------------------------------------------------
+        # DESTINATION FALLBACK
+        # ---------------------------------------------------------
+        # If ORS cannot route directly to the selected destination,
+        # search nearby OSM walkable ways/nodes and try them one by one.
+
+        try:
+            candidates = await find_destination_candidates(
+                latitude=request.destination.latitude,
+                longitude=request.destination.longitude,
+            )
+
+        except DestinationResolverError as resolver_error:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": (
+                        "The selected destination is not directly "
+                        "walkable/routable, and nearby OSM access "
+                        "points could not be found."
+                    ),
+                    "original_error": str(original_ors_error),
+                    "resolver_error": str(resolver_error),
+                },
+            ) from resolver_error
+
+        ors_data = None
+        last_ors_error = original_ors_error
+
+        # Try nearby candidates until ORS accepts one.
+        for candidate in candidates:
+            try:
+                candidate_ors_data = await get_walking_routes(
+                    start_latitude=request.start.latitude,
+                    start_longitude=request.start.longitude,
+                    destination_latitude=candidate["latitude"],
+                    destination_longitude=candidate["longitude"],
+                )
+
+                # Successful candidate found.
+                ors_data = candidate_ors_data
+                destination_latitude = candidate["latitude"]
+                destination_longitude = candidate["longitude"]
+                destination_adjusted = True
+                resolved_destination = candidate
+
+                print("\n=== DESTINATION RESOLVED ===")
+                print(
+                    f"Requested: {request.destination.latitude}, "
+                    f"{request.destination.longitude}"
+                )
+                print(
+                    f"Resolved: {destination_latitude}, "
+                    f"{destination_longitude}"
+                )
+                print(f"Source: {candidate.get('source')}")
+                print(f"Distance: {candidate.get('distance')} m")
+                break
+
+            except ORSError as candidate_error:
+                last_ors_error = candidate_error
+                continue
+
+        if ors_data is None:
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "message": (
+                        "The selected destination is not directly "
+                        "walkable/routable, and no nearby walkable "
+                        "access point could be routed to."
+                    ),
+                    "original_error": str(original_ors_error),
+                    "last_candidate_error": str(last_ors_error),
+                    "candidate_count": len(candidates),
+                },
+            ) from last_ors_error
 
     features = ors_data.get("features", [])
 
@@ -819,17 +908,39 @@ async def get_routes(
     # =========================================================
 
     return {
-        "status": "ok",
-        "profile": "foot-walking",
-        "route_count": len(routes),
+    "status": "ok",
+    "profile": "foot-walking",
+    "route_count": len(routes),
 
-        "recommended_route_id": (
-            recommended_route["route_id"]
-            if recommended_route
+    "destination": {
+        "requested": {
+            "latitude": request.destination.latitude,
+            "longitude": request.destination.longitude,
+        },
+        "resolved": (
+            {
+                "latitude": destination_latitude,
+                "longitude": destination_longitude,
+            }
+            if destination_adjusted
             else None
         ),
+        "adjusted": destination_adjusted,
+        "adjustment_reason": (
+            "Original destination was not directly routable. "
+            "A nearby walkable OSM access point was used."
+            if destination_adjusted
+            else None
+        ),
+    },
 
-        "recommendation": recommendation,
+    "recommended_route_id": (
+        recommended_route["route_id"]
+        if recommended_route
+        else None
+    ),
 
-        "routes": routes,
-    }
+    "recommendation": recommendation,
+
+    "routes": routes,
+}
