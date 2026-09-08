@@ -4,12 +4,17 @@ info:
   title: Api
   version: 0.1.0
   description: Backend foundation for safe pedestrian route recommendations
+
 servers:
   - url: /api
     description: Base API path
+
 tags:
   - name: health
     description: Health operations
+  - name: routes
+    description: Route operations
+
 paths:
   /health:
     get:
@@ -24,6 +29,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /routes:
+    post:
+      operationId: getRoutes
+      tags: [routes]
+      summary: Receive a route request
+      description: Accepts start and destination coordinates for pedestrian routing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RouteRequest"
+      responses:
+        "200":
+          description: Route request received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RouteRequestResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -38,3 +64,41 @@ components:
         - status
         - service
 
+    Coordinates:
+      type: object
+      description: Geographic coordinates
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+      required:
+        - latitude
+        - longitude
+
+    RouteRequest:
+      type: object
+      description: Start and destination coordinates for a route request
+      properties:
+        start:
+          $ref: "#/components/schemas/Coordinates"
+        destination:
+          $ref: "#/components/schemas/Coordinates"
+      required:
+        - start
+        - destination
+
+    RouteRequestResponse:
+      type: object
+      description: Confirmation that the route request was received
+      properties:
+        status:
+          type: string
+        start:
+          $ref: "#/components/schemas/Coordinates"
+        destination:
+          $ref: "#/components/schemas/Coordinates"
+      required:
+        - status
+        - start
+        - destination

@@ -18,3 +18,31 @@ export const HealthCheckResponse = zod.object({
 }).describe('Availability status of the backend service')
 
 
+/**
+ * Accepts start and destination coordinates for pedestrian routing
+ * @summary Receive a route request
+ */
+export const GetRoutesBody = zod.object({
+  "start": zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+}).describe('Geographic coordinates'),
+  "destination": zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+}).describe('Geographic coordinates')
+}).describe('Start and destination coordinates for a route request')
+
+export const GetRoutesResponse = zod.object({
+  "status": zod.string(),
+  "start": zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+}).describe('Geographic coordinates'),
+  "destination": zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+}).describe('Geographic coordinates')
+}).describe('Confirmation that the route request was received')
+
+

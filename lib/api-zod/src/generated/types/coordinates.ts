@@ -6,7 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export * from './coordinates';
-export * from './healthStatus';
-export * from './routeRequest';
-export * from './routeRequestResponse';
+/**
+ * Geographic coordinates
+ */
+export interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
