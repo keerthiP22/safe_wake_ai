@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Safe Pedestrian Route"
+description = "A beginner-friendly foundation for an AI-based safe pedestrian route recommendation project, with a React TypeScript frontend and a separate FastAPI backend ready for future capabilities."
+version = "1.0.0"
+id = "artifacts/safe-pedestrian-route"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21027
+
+[services.development]
+run = "pnpm --filter @workspace/safe-pedestrian-route run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/safe-pedestrian-route", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/safe-pedestrian-route/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21027"
+BASE_PATH = "/"

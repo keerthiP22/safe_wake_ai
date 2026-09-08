@@ -1,0 +1,1 @@
+- [Python API workflow path](api-service-working-directory.md) — managed API services start in their artifact directory, so top-level Python packages need an explicit repository-root working-directory change.

@@ -1,44 +1,46 @@
-# [Project name]
+# Safe Pedestrian Route Recommendation
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Beginner-friendly foundation for an urban pedestrian safety route recommendation project.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/safe-pedestrian-route run dev` — run the React frontend
+- `uvicorn backend.main:app --reload --port 8000` — run the FastAPI backend locally
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
+- `pnpm --filter @workspace/safe-pedestrian-route run build` — build the frontend
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
+- API: Python + FastAPI
+- Frontend: React + TypeScript + Vite
 - API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/safe-pedestrian-route/` — React + TypeScript frontend
+- `backend/` — Python + FastAPI backend
+- `lib/api-spec/openapi.yaml` — source of truth for the current API contract
+- `lib/api-client-react/` — generated React Query client
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The first API surface is intentionally limited to `GET /api/healthz`; product capabilities will be added incrementally.
+- Frontend and backend live in separate top-level directories so the boundary stays clear for beginner contributors.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+The foundation presents the project purpose and confirms whether the FastAPI backend is available. Mapping, routing, AI/ML, authentication, and external data sources are intentionally not included yet.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Keep the first iterations simple and beginner-friendly.
+- Do not add Mapbox, OpenStreetMap, Overpass, AI/ML, Supabase, authentication, routing, or fake/demo data unless explicitly requested later.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Keep `lib/api-spec/openapi.yaml` synchronized with backend endpoints and regenerate the typed client after contract changes.
 
 ## Pointers
 
